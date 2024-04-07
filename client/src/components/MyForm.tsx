@@ -6,45 +6,32 @@ import fileUpload from "../modules/fileUpload";
 
 const MyForm = () => {
 	const [form] = Form.useForm();
-	// const [fileList, setFileList] = useState<any>([]);
 
+	// Handle form submit, triggered when user clicks submit button
 	const handleSubmit = (values: any) => {
 		console.log("handleSubmit", values);
-		// values.attachments = fileList;
 		formData
 			.submit(values)
 			.then((result) => {
 				console.log(result);
+				form.resetFields();
 			})
 			.catch((error) => {
 				console.error(error);
 			});
 	};
 
-	const normFile = (e: any) => {
-		console.log("Upload event:", e);
-		if (Array.isArray(e)) {
-			return e;
-		}
-		return e && e.fileList;
-	};
-
+	// Handle file upload request
 	const handleUploadRequest = async (info: any) => {
 		const formData = new FormData();
-		formData.append("file", info.file);
-		const filename = info.file.name;
+		formData.append("attachments", info.file);
 
-		const imgUUID = filename.split(".").pop();
-		formData.append("uuid", imgUUID);
-		console.log("handleUploadRequest", formData);
-
-		// setFileList([...fileList]);
-
-		fileUpload
+		await fileUpload
 			.upload(formData)
 			.then((data: any) => {
 				info.onSuccess(data, info.file);
 				form.setFieldValue("attachments", data.data);
+				console.log("handleUploadRequest", data.data);
 			})
 			.catch((error: any) => {
 				info.onError(error, info.file);
@@ -52,7 +39,7 @@ const MyForm = () => {
 	};
 
 	const handleUploadChange = (info: any) => {
-		// Update form values with uploaded file list
+		console.log("handleUploadChange", info);
 		form.setFieldsValue({ attachments: info.fileList });
 	};
 
@@ -64,7 +51,7 @@ const MyForm = () => {
 				borderRadius: "5px",
 			}}
 		>
-			<Form name="basic" form={form} onFinish={handleSubmit}>
+			<Form form={form} onFinish={handleSubmit}>
 				<Form.Item
 					label="Name"
 					name="name"
@@ -83,8 +70,15 @@ const MyForm = () => {
 
 				<Form.Item
 					label="Upload File"
+					name="attachments"
 					valuePropName="fileList"
-					getValueFromEvent={normFile}
+					getValueFromEvent={(e) => {
+						console.log("Upload event:", e);
+						if (Array.isArray(e)) {
+							return e;
+						}
+						return e && e.fileList;
+					}}
 				>
 					<Upload
 						customRequest={handleUploadRequest}

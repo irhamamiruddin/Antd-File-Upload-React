@@ -23,7 +23,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-app.post('/', upload.array('file'), (req, res) => {  // Set array limit to 10 or desired number
+app.post('/', upload.array('attachments'), (req, res) => {  // Set array limit to 10 or desired number
     try {
         const files = req.files as Express.Multer.File[];
         const attachments = files.map(file => {
