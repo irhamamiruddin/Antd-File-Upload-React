@@ -6,7 +6,7 @@ import cors from 'cors';
 import formRouter from './routes/formData';
 import fileUploadRouter from './routes/fileUpload';
 
-const PORT = 5000;
+const PORT = 5002;
 const MONGOSTR = 'mongodb://127.0.0.1:27017/Irham';
 const app = express();
 const server = new http.Server(app);

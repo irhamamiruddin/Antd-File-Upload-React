@@ -25,12 +25,17 @@ const upload = multer({ storage: storage });
 
 app.post('/', upload.array('attachments'), (req, res) => {  // Set array limit to 10 or desired number
     try {
+        console.log('Files uploaded:', req.files);
+        if (!req.files) {
+            return res.status(400).send('No file uploaded');
+        }
         const files = req.files as Express.Multer.File[];
         const attachments = files.map(file => {
-            const file_name = file.filename;
-            const file_path = path.join(__dirname, file.path);
+            console.log('File uploaded:', file);
+            const name = file.originalname;
+            const file_path = file.path; //path.join(__dirname, file.path);
             const upload_date = new Date().toISOString();
-            return { upload_date, file_name, file_path };
+            return { upload_date, name, file_path };
         });
 
         res.status(200).json(attachments);
@@ -38,6 +43,39 @@ app.post('/', upload.array('attachments'), (req, res) => {  // Set array limit t
         console.error('Error uploading files:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
+});
+
+app.post("/file_download", (req: any, res: any) => {
+    const file_path = req.body.file_path;
+    if (!file_path) {
+        return res.status(400).send('No file path provided');
+    }
+    // Check if file exists
+    if (!fs.existsSync(file_path)) {
+        console.log('file not found')
+        return res.status(404).send('File not found');
+    }
+    res.download(file_path, (error: any) => {
+        if (error) {
+            res.status(500).send(error.message);
+        }
+    });
+});
+
+// API for file removal
+app.post("/file_remove", (req: any, res: any) => {
+    const file_path = req.body.file_path;
+    if (!file_path) {
+        return res.status(400).send('No file path provided');
+    }
+    fs.unlink(file_path, (error: any) => {
+        if (error) {
+            console.log('error file remove', error)
+            res.status(500).send(error.message);
+        } else {
+            res.status(200).send('File removed');
+        }
+    });
 });
 
 export default app;
